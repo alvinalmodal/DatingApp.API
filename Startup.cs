@@ -12,6 +12,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation.AspNetCore;
+using DatingApp.API.Validators;
+using FluentValidation;
+using DatingApp.API.Dtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace DatingApp.API
 {
@@ -28,8 +35,17 @@ namespace DatingApp.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>( x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation();
             services.AddCors();
+            services.AddScoped<IAuthRepository,AuthRepository>();
+            services.AddTransient<IValidator<UserForRegisterDto>, UserForRegisterDtoValidator>();
+            services.AddTransient<IValidator<UserForLoginDto>, UserForLoginDtoValidator>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters{
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +56,8 @@ namespace DatingApp.API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
+            
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseHttpsRedirection();
