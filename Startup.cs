@@ -46,6 +46,7 @@ namespace DatingApp.API
             services.AddScoped<IAuthRepository,AuthRepository>();
             services.AddTransient<IValidator<UserForRegisterDto>, UserForRegisterDtoValidator>();
             services.AddTransient<IValidator<UserForLoginDto>, UserForLoginDtoValidator>();
+            services.AddTransient<IValidator<UserForUpdateDto>, UserForUpdateDtoValidator>();
             services.AddScoped<IDatingRepository, DatingRepository>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters{
                 ValidateIssuerSigningKey = true,
