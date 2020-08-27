@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 
 namespace DatingApp.API.Controllers
 {
@@ -20,9 +21,11 @@ namespace DatingApp.API.Controllers
     {
         public IAuthRepository _authRepo { get; }
         public IConfiguration _config { get; }
+        public IMapper _mapper { get; }
 
-        public AuthController(IAuthRepository authRepo, IConfiguration config)
+        public AuthController(IAuthRepository authRepo, IConfiguration config, IMapper mapper)
         {
+            _mapper = mapper;
             _config = config;
             _authRepo = authRepo;
         }
@@ -52,7 +55,7 @@ namespace DatingApp.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForRegisterDto userForRegisterDto)
         {
-                
+
             var userFromRepo = await _authRepo.Login(userForRegisterDto.Username.ToLower(), userForRegisterDto.Password);
 
             if (userFromRepo == null)
@@ -67,7 +70,7 @@ namespace DatingApp.API.Controllers
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
-        
+
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -81,8 +84,12 @@ namespace DatingApp.API.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new {
-                token = tokenHandler.WriteToken(token)
+            var user = _mapper.Map<UserForListDto>(userFromRepo);
+
+            return Ok(new
+            {
+                token = tokenHandler.WriteToken(token),
+                user
             });
         }
 
