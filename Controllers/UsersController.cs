@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using DatingApp.API.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using AutoMapper;
@@ -9,6 +8,7 @@ using DatingApp.API.Dtos;
 using System.Collections.Generic;
 using System;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models;
 
 namespace DatingApp.API.Controllers
 {
@@ -36,6 +36,7 @@ namespace DatingApp.API.Controllers
             {
                 userParams.Gender = userFromRepo.Gender == "male" ? "female" : "male";
             }
+            userParams.UserId = userFromRepo.Id;
             var users = await _datingRepo.GetUsers(userParams);
             var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
             Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
@@ -68,6 +69,41 @@ namespace DatingApp.API.Controllers
             }
 
             throw new Exception($"Updating user {id} failed on save.");
+        }
+
+        [HttpPost("{id}/like/{recipientId}")]
+        public async Task<IActionResult> LikeUser(int id, int recipientId)
+        {
+            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            {
+                return Unauthorized();
+            }
+
+            var like = await _datingRepo.GetLike(id, recipientId);
+
+            if (like != null)
+            {
+                return BadRequest("You already like this user");
+            }
+
+            if (await _datingRepo.GetUser(recipientId) == null)
+            {
+                return NotFound();
+            }
+
+            like = new Like
+            {
+                LikerId = id,
+                LikeeId = recipientId
+            };
+
+            _datingRepo.Add<Like>(like);
+            if (await _datingRepo.SaveAll())
+            {
+                return Ok();
+            }
+
+            return BadRequest("Failed to like user.");
         }
 
     }
