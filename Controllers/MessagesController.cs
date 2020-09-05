@@ -86,7 +86,9 @@ namespace DatingApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMessage(int userId, MessageForCreationDto messageForCreationDto)
         {
-            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            var sender = await _datingRepo.GetUser(userId);
+
+            if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
             {
                 return Unauthorized();
             }
@@ -105,10 +107,9 @@ namespace DatingApp.API.Controllers
 
             _datingRepo.Add(message);
 
-            var messageToReturn = _mapper.Map<MessageForCreationDto>(message);
-
             if (await _datingRepo.SaveAll())
             {
+                var messageToReturn = _mapper.Map<MessageToReturnDto>(message);
                 return Ok(messageToReturn);
             }
 
