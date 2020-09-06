@@ -146,7 +146,6 @@ namespace DatingApp.API.Controllers
             }
 
             throw new Exception("Error deleting the message.");
-
         }
 
     }
