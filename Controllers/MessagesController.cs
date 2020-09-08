@@ -13,7 +13,6 @@ using System.Collections.Generic;
 namespace DatingApp.API.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [ApiController]
     [Route("api/v1/users/{userId}/[controller]")]
     public class MessagesController : ControllerBase

@@ -14,7 +14,6 @@ using System.Text.Json;
 namespace DatingApp.API.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class UsersController : ControllerBase
