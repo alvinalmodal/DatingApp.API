@@ -80,7 +80,6 @@ namespace DatingApp.API
             services.AddCors();
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper(typeof(DatingRepository).Assembly);
-            services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddTransient<IValidator<UserForRegisterDto>, UserForRegisterDtoValidator>();
             services.AddTransient<IValidator<UserForLoginDto>, UserForLoginDtoValidator>();
             services.AddTransient<IValidator<UserForUpdateDto>, UserForUpdateDtoValidator>();

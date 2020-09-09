@@ -6,7 +6,7 @@ namespace DatingApp.API.Validators
 {
     public class UserForUpdateDtoValidator : AbstractValidator<UserForUpdateDto>
     {
-        public UserForUpdateDtoValidator(IAuthRepository _authRepo)
+        public UserForUpdateDtoValidator()
         {
             RuleFor(user => user.Introduction).NotEmpty();
             RuleFor(user => user.LookingFor).NotEmpty();

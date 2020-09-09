@@ -22,38 +22,36 @@ namespace DatingApp.API.Controllers
     [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        public IAuthRepository _authRepo { get; }
         public IConfiguration _config { get; }
         public IMapper _mapper { get; }
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
 
-        public AuthController(IAuthRepository authRepo, IConfiguration config, IMapper mapper,
+        public AuthController(IConfiguration config, IMapper mapper,
             UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
             _config = config;
-            _authRepo = authRepo;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
         {
-            // validate request
-            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
-
-            if (await _authRepo.UserExists(userForRegisterDto.Username))
-            {
-                return BadRequest("Username already exists.");
-            }
 
             var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
-            var createdUser = await _authRepo.Register(userToCreate, userForRegisterDto.Password);
+            var result = await _userManager.CreateAsync(userToCreate, userForRegisterDto.Password);
 
-            return Ok(createdUser);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(userToCreate);
+
+            if (result.Succeeded)
+            {
+                return Ok(userToReturn);
+            }
+
+            return BadRequest(result.Errors);
         }
 
         [HttpPost("login")]

@@ -6,7 +6,7 @@ namespace DatingApp.API.Validators
 {
     public class UserForLoginDtoValidator : AbstractValidator<UserForLoginDto>
     {
-        public UserForLoginDtoValidator(IAuthRepository _authRepo)
+        public UserForLoginDtoValidator()
         {
             RuleFor(user => user.Username).NotEmpty();
             RuleFor(user => user.Password).MinimumLength(4);
