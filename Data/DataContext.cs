@@ -35,7 +35,7 @@ namespace DatingApp.API.Data
 
                 userRole.HasOne(ur => ur.User)
                 .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId)
+                .HasForeignKey(ur => ur.UserId)
                 .IsRequired();
             });
 
