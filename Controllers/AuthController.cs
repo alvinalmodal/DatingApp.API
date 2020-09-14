@@ -14,6 +14,7 @@ using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Controllers
 {
@@ -26,10 +27,12 @@ namespace DatingApp.API.Controllers
         public IMapper _mapper { get; }
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly DataContext _context;
 
-        public AuthController(IConfiguration config, IMapper mapper,
+        public AuthController(DataContext context, IConfiguration config, IMapper mapper,
             UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
@@ -58,7 +61,9 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> Login(UserForLoginDto userForLogin)
         {
 
-            var user = await _userManager.FindByNameAsync(userForLogin.Username);
+            var user = await _context.Users
+                                .Include(p => p.Photos)
+                                .FirstOrDefaultAsync(u => u.UserName == userForLogin.Username);
 
             if (user == null)
             {
@@ -73,7 +78,7 @@ namespace DatingApp.API.Controllers
 
                 return Ok(new
                 {
-                    token = await GenerateJwtToken(user),
+                    token = GenerateJwtToken(user).Result,
                     user = appUser
                 });
             }
